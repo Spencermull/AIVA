@@ -1,21 +1,29 @@
-/*
-Elegoo Motor Controller
+#include <string.h>
 
-Purpose:
-Handles low-level motor control and sensor reading for the robot.
-
-Responsibilities:
-- Parse serial commands from Raspberry Pi
-- Control motor direction and speed using PWM
-- Implement STOP and movement commands
-- Optionally send telemetry data (distance sensors, status)
-*/
+static const size_t kLineBufferSize = 32;
+char lineBuffer[kLineBufferSize];
+size_t lineIndex = 0;
 
 void setup() {
   Serial.begin(115200);
 }
 
 void loop() {
-  // Read serial commands and control motors
+  while (Serial.available() > 0) {
+    char c = static_cast<char>(Serial.read());
+    if (c == '\r') {
+      continue;
+    }
+    if (c == '\n') {
+      lineBuffer[lineIndex] = '\0';
+      if (strncmp(lineBuffer, "PING", 4) == 0) {
+        Serial.println("PONG");
+      }
+      lineIndex = 0;
+      continue;
+    }
+    if (lineIndex < kLineBufferSize - 1) {
+      lineBuffer[lineIndex++] = c;
+    }
+  }
 }
-
