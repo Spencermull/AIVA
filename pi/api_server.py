@@ -48,6 +48,14 @@ def move():
     return jsonify({"ok": True, "direction": direction})
 
 
+@app.get("/telemetry")
+def telemetry():
+    bridge = app.config.get("bridge")
+    serial_conn = getattr(bridge, "_ser", None) if bridge is not None else None
+    connected = bool(serial_conn and getattr(serial_conn, "is_open", False))
+    return jsonify({"connected": connected})
+
+
 def run_server(host: str = "0.0.0.0", port: int = 5000) -> None:
     app.run(host=host, port=port)
 
