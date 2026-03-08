@@ -1,11 +1,13 @@
-"""Robot Control API
+from flask import Flask, jsonify
 
-Purpose:
-Expose robot control endpoints via Flask.
+app = Flask(__name__)
 
-Responsibilities:
-- Provide endpoints to move or stop the robot
-- Provide telemetry endpoints
-- Allow external clients or UI dashboards to control the robot
-"""
+
+@app.get("/health")
+def health():
+    return jsonify({"status": "ok"})
+
+
+def run_server(host: str = "0.0.0.0", port: int = 5000) -> None:
+    app.run(host=host, port=port)
 
