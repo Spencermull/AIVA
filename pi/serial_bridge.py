@@ -12,7 +12,7 @@ def find_arduino_port() -> str:
 
 
 class SerialBridge:
-    BAUD = 9600
+    BAUD = 115200
     RESET_DELAY = 2.0  # seconds to wait for Arduino reset after connect
 
     def __init__(self, port: str = None):
