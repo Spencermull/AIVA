@@ -35,23 +35,24 @@ void motorControl(uint8_t dirA, uint8_t speedA, uint8_t dirB, uint8_t speedB) {
 void handleCommand(char cmd) {
   switch (cmd) {
     case 'F':
-      // Forward: A=LOW, B=HIGH
+      Serial.println("CMD:F");
       motorControl(LOW, DEFAULT_SPEED, HIGH, DEFAULT_SPEED);
       break;
     case 'B':
-      // Backward: A=HIGH, B=LOW
+      Serial.println("CMD:B");
       motorControl(HIGH, DEFAULT_SPEED, LOW, DEFAULT_SPEED);
       break;
     case 'L':
-      // Left: A forward (LOW), B backward (LOW)
+      Serial.println("CMD:L");
       motorControl(LOW, DEFAULT_SPEED, LOW, DEFAULT_SPEED);
       break;
     case 'R':
-      // Right: A backward (HIGH), B forward (HIGH)
+      Serial.println("CMD:R");
       motorControl(HIGH, DEFAULT_SPEED, HIGH, DEFAULT_SPEED);
       break;
     case 'S':
     default:
+      Serial.println("CMD:S");
       motorControl(LOW, 0, HIGH, 0);
       break;
   }

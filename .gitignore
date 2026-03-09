@@ -1,2 +1,5 @@
 AGENTS.MD
 /context
+.gitignore
+CONTEXT.md
+/pi/debug.py
