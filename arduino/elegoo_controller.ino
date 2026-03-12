@@ -1,86 +1,192 @@
-// Elegoo Smart Robot Car V4.0 — DRV8835 motor controller
-// Pins from the official DRV8835 shield (SmartCar-Shield-V1.0):
-//   PWMA → D5  (Motor A speed, RIGHT side)
-//   PWMB → D6  (Motor B speed, LEFT side)
-//   AIN_1 → D8 (Motor A direction: LOW=forward, HIGH=backward)
-//   BIN_1 → D7 (Motor B direction: HIGH=forward, LOW=backward)
-//
-// Serial commands (single char, 115200 baud):
-//   F = Forward     B = Backward
-//   L = Left        R = Right
-//   S = Stop        PING\n = PONG (health-check)
+/*
+===========================================================
+Project: AIVA Robot Car
+Board: Arduino Uno + Smart Car Shield V1.1
+Motor Driver: TB6612FNG (dual DC motor driver)
 
-#include <string.h>
+This Arduino sketch receives single-character commands
+from a Raspberry Pi over USB serial (115200 baud) and
+controls the robot car motors.
 
-#define PIN_Motor_PWMA  5
-#define PIN_Motor_PWMB  6
-#define PIN_Motor_BIN_1 7
-#define PIN_Motor_AIN_1 8
+IMPORTANT:
+The TB6612FNG motor driver requires the STBY pin to be
+set HIGH or the motors will remain disabled.
 
-#define DEFAULT_SPEED 200
+-----------------------------------------------------------
+Motor Driver Pin Mapping (Smart Car Shield V1.1)
 
-static const size_t kLineBufferSize = 32;
-char lineBuffer[kLineBufferSize];
-size_t lineIndex = 0;
+Right Motor (Motor A)
+  PWMA → D5   (PWM speed control)
+  AIN1 → D7   (direction)
+  AIN2 → D8   (direction)
 
-// Motor A (right): dirA LOW=forward, HIGH=backward
-// Motor B (left):  dirB HIGH=forward, LOW=backward
-void motorControl(uint8_t dirA, uint8_t speedA, uint8_t dirB, uint8_t speedB) {
-  digitalWrite(PIN_Motor_AIN_1, dirA);
-  analogWrite(PIN_Motor_PWMA, speedA);
-  digitalWrite(PIN_Motor_BIN_1, dirB);
-  analogWrite(PIN_Motor_PWMB, speedB);
+Left Motor (Motor B)
+  PWMB → D6   (PWM speed control)
+  BIN1 → D9   (direction)
+  BIN2 → D10  (direction)
+
+Driver Control
+  STBY → D3   (must be HIGH to enable motors)
+
+-----------------------------------------------------------
+Serial Protocol (from Raspberry Pi)
+
+Baud Rate: 115200
+
+Commands (single character):
+  F = Forward
+  B = Backward
+  L = Turn Left
+  R = Turn Right
+  S = Stop
+
+Health Check:
+  "PING\n" → responds with "PONG"
+
+Example:
+  echo F > /dev/ttyUSB0
+  echo S > /dev/ttyUSB0
+
+-----------------------------------------------------------
+System Architecture
+
+Raspberry Pi
+  └─ Flask API
+      └─ Serial bridge
+          └─ USB → Arduino
+                └─ TB6612FNG Motor Driver
+                      └─ Motors
+
+-----------------------------------------------------------
+Notes
+
+• If motors do not move, check that STBY is HIGH.
+• Battery powers the motors; USB powers Arduino logic.
+• USB backfeeding can light LEDs even when battery is off.
+
+===========================================================
+*/
+
+#define PWMA 5
+#define AIN1 7
+#define AIN2 8
+#define PWMB 6
+#define BIN1 9
+#define BIN2 10
+#define STBY 3
+
+const int MOTOR_SPEED = 200;  // 0-255
+
+void stopMotors() {
+  analogWrite(PWMA, 0);
+  analogWrite(PWMB, 0);
+
+  digitalWrite(AIN1, LOW);
+  digitalWrite(AIN2, LOW);
+  digitalWrite(BIN1, LOW);
+  digitalWrite(BIN2, LOW);
 }
 
-void handleCommand(char cmd) {
-  switch (cmd) {
-    case 'F':
-      Serial.println("CMD:F");
-      motorControl(LOW, DEFAULT_SPEED, HIGH, DEFAULT_SPEED);
-      break;
-    case 'B':
-      Serial.println("CMD:B");
-      motorControl(HIGH, DEFAULT_SPEED, LOW, DEFAULT_SPEED);
-      break;
-    case 'L':
-      Serial.println("CMD:L");
-      motorControl(LOW, DEFAULT_SPEED, LOW, DEFAULT_SPEED);
-      break;
-    case 'R':
-      Serial.println("CMD:R");
-      motorControl(HIGH, DEFAULT_SPEED, HIGH, DEFAULT_SPEED);
-      break;
-    case 'S':
-    default:
-      Serial.println("CMD:S");
-      motorControl(LOW, 0, HIGH, 0);
-      break;
-  }
+void moveForward(int speed) {
+  digitalWrite(AIN1, HIGH);
+  digitalWrite(AIN2, LOW);
+  digitalWrite(BIN1, HIGH);
+  digitalWrite(BIN2, LOW);
+
+  analogWrite(PWMA, speed);
+  analogWrite(PWMB, speed);
+}
+
+void moveBackward(int speed) {
+  digitalWrite(AIN1, LOW);
+  digitalWrite(AIN2, HIGH);
+  digitalWrite(BIN1, LOW);
+  digitalWrite(BIN2, HIGH);
+
+  analogWrite(PWMA, speed);
+  analogWrite(PWMB, speed);
+}
+
+void turnLeft(int speed) {
+  // Left motor backward, right motor forward
+  digitalWrite(AIN1, HIGH);
+  digitalWrite(AIN2, LOW);
+  digitalWrite(BIN1, LOW);
+  digitalWrite(BIN2, HIGH);
+
+  analogWrite(PWMA, speed);
+  analogWrite(PWMB, speed);
+}
+
+void turnRight(int speed) {
+  // Left motor forward, right motor backward
+  digitalWrite(AIN1, LOW);
+  digitalWrite(AIN2, HIGH);
+  digitalWrite(BIN1, HIGH);
+  digitalWrite(BIN2, LOW);
+
+  analogWrite(PWMA, speed);
+  analogWrite(PWMB, speed);
 }
 
 void setup() {
   Serial.begin(115200);
-  pinMode(PIN_Motor_PWMA, OUTPUT);
-  pinMode(PIN_Motor_PWMB, OUTPUT);
-  pinMode(PIN_Motor_AIN_1, OUTPUT);
-  pinMode(PIN_Motor_BIN_1, OUTPUT);
-  motorControl(LOW, 0, HIGH, 0);
+
+  pinMode(PWMA, OUTPUT);
+  pinMode(AIN1, OUTPUT);
+  pinMode(AIN2, OUTPUT);
+
+  pinMode(PWMB, OUTPUT);
+  pinMode(BIN1, OUTPUT);
+  pinMode(BIN2, OUTPUT);
+
+  pinMode(STBY, OUTPUT);
+
+  // Wake up TB6612FNG
+  digitalWrite(STBY, HIGH);
+
+  stopMotors();
+
+  Serial.println("READY");
 }
 
 void loop() {
-  while (Serial.available() > 0) {
-    char c = static_cast<char>(Serial.read());
-    if (c == 'F' || c == 'B' || c == 'L' || c == 'R' || c == 'S') {
-      handleCommand(c);
-      continue;
+  if (Serial.available() > 0) {
+    char cmd = Serial.read();
+
+    // Ignore newline / carriage return
+    if (cmd == '\n' || cmd == '\r') {
+      return;
     }
-    if (c == '\r') continue;
-    if (c == '\n') {
-      lineBuffer[lineIndex] = '\0';
-      if (strncmp(lineBuffer, "PING", 4) == 0) Serial.println("PONG");
-      lineIndex = 0;
-      continue;
+
+    Serial.print("CMD:");
+    Serial.println(cmd);
+
+    switch (cmd) {
+      case 'F':
+        moveForward(MOTOR_SPEED);
+        break;
+
+      case 'B':
+        moveBackward(MOTOR_SPEED);
+        break;
+
+      case 'L':
+        turnLeft(MOTOR_SPEED);
+        break;
+
+      case 'R':
+        turnRight(MOTOR_SPEED);
+        break;
+
+      case 'S':
+        stopMotors();
+        break;
+
+      default:
+        stopMotors();
+        Serial.println("UNKNOWN");
+        break;
     }
-    if (lineIndex < kLineBufferSize - 1) lineBuffer[lineIndex++] = c;
   }
 }
