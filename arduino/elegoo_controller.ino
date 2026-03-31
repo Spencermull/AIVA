@@ -54,28 +54,28 @@ void stopMotors() {
 }
 
 void moveForward(int speed) {
-  digitalWrite(AIN1, HIGH);  // Right motor forward
+  digitalWrite(AIN1, LOW);   // Right motor forward
   digitalWrite(BIN1, HIGH);  // Left motor forward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void moveBackward(int speed) {
-  digitalWrite(AIN1, LOW);   // Right motor backward
+  digitalWrite(AIN1, HIGH);  // Right motor backward
   digitalWrite(BIN1, LOW);   // Left motor backward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnLeft(int speed) {
-  digitalWrite(AIN1, HIGH);  // Right motor forward
+  digitalWrite(AIN1, LOW);   // Right motor forward
   digitalWrite(BIN1, LOW);   // Left motor backward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnRight(int speed) {
-  digitalWrite(AIN1, LOW);   // Right motor backward
+  digitalWrite(AIN1, HIGH);  // Right motor backward
   digitalWrite(BIN1, HIGH);  // Left motor forward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
