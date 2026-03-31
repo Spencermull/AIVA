@@ -69,16 +69,16 @@ void moveBackward(int speed) {
 
 void turnLeft(int speed) {
   // Right motor forward, left motor backward
-  digitalWrite(AIN1, HIGH);
-  digitalWrite(BIN1, LOW);
+  digitalWrite(AIN1, LOW);
+  digitalWrite(BIN1, HIGH);
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnRight(int speed) {
   // Right motor backward, left motor forward
-  digitalWrite(AIN1, LOW);
-  digitalWrite(BIN1, HIGH);
+  digitalWrite(AIN1, HIGH);
+  digitalWrite(BIN1, LOW);
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
