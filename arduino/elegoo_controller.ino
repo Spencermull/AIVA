@@ -17,13 +17,13 @@ Right Motor (Motor A)
 
 Left Motor (Motor B)
   PWMB  → D6   (PWM speed control, analogWrite 0-255)
-  BIN_1 → D7   (direction: HIGH=forward, LOW=backward)
+  BIN_1 → D7   (direction: LOW=forward, HIGH=backward)
 
 Enable
   STBY  → D3   (must be HIGH to enable motors)
 
-NOTE: Motor A and B have OPPOSITE direction logic because
-the motors are physically mounted mirrored on each side.
+NOTE: Both motors use the SAME direction logic (LOW=fwd).
+The shield's PCB handles the mirrored motor wiring internally.
 
 -----------------------------------------------------------
 Serial Protocol (from Raspberry Pi)
@@ -43,7 +43,7 @@ Commands (single character):
 #define PWMA 5    // Right motor speed
 #define AIN1 8    // Right motor direction (LOW=fwd, HIGH=bwd)
 #define PWMB 6    // Left motor speed
-#define BIN1 7    // Left motor direction (HIGH=fwd, LOW=bwd)
+#define BIN1 7    // Left motor direction (LOW=fwd, HIGH=bwd)
 #define STBY 3    // Enable pin (must be HIGH)
 
 const int MOTOR_SPEED = 200;  // 0-255
@@ -55,14 +55,14 @@ void stopMotors() {
 
 void moveForward(int speed) {
   digitalWrite(AIN1, LOW);   // Right motor forward
-  digitalWrite(BIN1, HIGH);  // Left motor forward
+  digitalWrite(BIN1, LOW);   // Left motor forward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void moveBackward(int speed) {
   digitalWrite(AIN1, HIGH);  // Right motor backward
-  digitalWrite(BIN1, LOW);   // Left motor backward
+  digitalWrite(BIN1, HIGH);  // Left motor backward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
@@ -70,7 +70,7 @@ void moveBackward(int speed) {
 void turnLeft(int speed) {
   // Right motor forward, left motor backward
   digitalWrite(AIN1, LOW);
-  digitalWrite(BIN1, LOW);
+  digitalWrite(BIN1, HIGH);
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
@@ -78,7 +78,7 @@ void turnLeft(int speed) {
 void turnRight(int speed) {
   // Right motor backward, left motor forward
   digitalWrite(AIN1, HIGH);
-  digitalWrite(BIN1, HIGH);
+  digitalWrite(BIN1, LOW);
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
