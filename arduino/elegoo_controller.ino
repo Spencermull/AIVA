@@ -1,32 +1,29 @@
 /*
 ===========================================================
 Project: AIVA Robot Car
-Board: Arduino Uno + Smart Car Shield V1.1
-Motor Driver: TB6612FNG (dual DC motor driver)
+Board: Arduino Uno + Elegoo Smart Car V4.0 Shield
+Motor Driver: DRV8835 (phase/enable mode)
 
 This Arduino sketch receives single-character commands
 from a Raspberry Pi over USB serial (115200 baud) and
 controls the robot car motors.
 
-IMPORTANT:
-The TB6612FNG motor driver requires the STBY pin to be
-set HIGH or the motors will remain disabled.
-
 -----------------------------------------------------------
-Motor Driver Pin Mapping (Smart Car Shield V1.1)
+DRV8835 Pin Mapping (Elegoo Smart Car V4.0)
 
 Right Motor (Motor A)
-  PWMA → D5   (PWM speed control)
-  AIN1 → D7   (direction)
-  AIN2 → D8   (direction)
+  PWMA  → D5   (PWM speed control, analogWrite 0-255)
+  AIN_1 → D8   (direction: LOW=forward, HIGH=backward)
 
 Left Motor (Motor B)
-  PWMB → D6   (PWM speed control)
-  BIN1 → D9   (direction)
-  BIN2 → D10  (direction)
+  PWMB  → D6   (PWM speed control, analogWrite 0-255)
+  BIN_1 → D7   (direction: HIGH=forward, LOW=backward)
 
-Driver Control
-  STBY → D3   (must be HIGH to enable motors)
+Enable
+  STBY  → D3   (must be HIGH to enable motors)
+
+NOTE: Motor A and B have OPPOSITE direction logic because
+the motors are physically mounted mirrored on each side.
 
 -----------------------------------------------------------
 Serial Protocol (from Raspberry Pi)
@@ -40,70 +37,48 @@ Commands (single character):
   R = Turn Right
   S = Stop
 
-Health Check:
-  "PING\n" → responds with "PONG"
-
 ===========================================================
 */
 
-#define PWMA 5
-#define AIN1 7
-#define AIN2 8
-#define PWMB 6
-#define BIN1 9
-#define BIN2 10
-#define STBY 3
+#define PWMA 5    // Right motor speed
+#define AIN1 8    // Right motor direction (LOW=fwd, HIGH=bwd)
+#define PWMB 6    // Left motor speed
+#define BIN1 7    // Left motor direction (HIGH=fwd, LOW=bwd)
+#define STBY 3    // Enable pin (must be HIGH)
 
 const int MOTOR_SPEED = 200;  // 0-255
 
 void stopMotors() {
   analogWrite(PWMA, 0);
   analogWrite(PWMB, 0);
-
-  digitalWrite(AIN1, LOW);
-  digitalWrite(AIN2, LOW);
-  digitalWrite(BIN1, LOW);
-  digitalWrite(BIN2, LOW);
 }
 
 void moveForward(int speed) {
-  digitalWrite(AIN1, HIGH);
-  digitalWrite(AIN2, LOW);
-  digitalWrite(BIN1, HIGH);
-  digitalWrite(BIN2, LOW);
-
+  digitalWrite(AIN1, LOW);   // Right motor forward
+  digitalWrite(BIN1, HIGH);  // Left motor forward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void moveBackward(int speed) {
-  digitalWrite(AIN1, LOW);
-  digitalWrite(AIN2, HIGH);
-  digitalWrite(BIN1, LOW);
-  digitalWrite(BIN2, HIGH);
-
+  digitalWrite(AIN1, HIGH);  // Right motor backward
+  digitalWrite(BIN1, LOW);   // Left motor backward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnLeft(int speed) {
   // Right motor forward, left motor backward
-  digitalWrite(AIN1, HIGH);
-  digitalWrite(AIN2, LOW);
+  digitalWrite(AIN1, LOW);
   digitalWrite(BIN1, LOW);
-  digitalWrite(BIN2, HIGH);
-
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnRight(int speed) {
   // Right motor backward, left motor forward
-  digitalWrite(AIN1, LOW);
-  digitalWrite(AIN2, HIGH);
+  digitalWrite(AIN1, HIGH);
   digitalWrite(BIN1, HIGH);
-  digitalWrite(BIN2, LOW);
-
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
@@ -113,15 +88,11 @@ void setup() {
 
   pinMode(PWMA, OUTPUT);
   pinMode(AIN1, OUTPUT);
-  pinMode(AIN2, OUTPUT);
-
   pinMode(PWMB, OUTPUT);
   pinMode(BIN1, OUTPUT);
-  pinMode(BIN2, OUTPUT);
-
   pinMode(STBY, OUTPUT);
 
-  // Wake up TB6612FNG
+  // Enable the motor driver
   digitalWrite(STBY, HIGH);
 
   stopMotors();
