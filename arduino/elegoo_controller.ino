@@ -67,42 +67,42 @@ void stopMotors() {
 }
 
 void moveForward(int speed) {
-  digitalWrite(AIN1, HIGH);
-  digitalWrite(AIN2, LOW);
-  digitalWrite(BIN1, LOW);
-  digitalWrite(BIN2, HIGH);
+  digitalWrite(AIN1, LOW);
+  digitalWrite(AIN2, HIGH);
+  digitalWrite(BIN1, HIGH);
+  digitalWrite(BIN2, LOW);
 
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void moveBackward(int speed) {
-  digitalWrite(AIN1, LOW);
-  digitalWrite(AIN2, HIGH);
-  digitalWrite(BIN1, HIGH);
-  digitalWrite(BIN2, LOW);
+  digitalWrite(AIN1, HIGH);
+  digitalWrite(AIN2, LOW);
+  digitalWrite(BIN1, LOW);
+  digitalWrite(BIN2, HIGH);
 
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnLeft(int speed) {
-  // Left motor backward, right motor forward
-  digitalWrite(AIN1, HIGH);
-  digitalWrite(AIN2, LOW);
-  digitalWrite(BIN1, HIGH);
-  digitalWrite(BIN2, LOW);
+  // Right motor forward, left motor backward
+  digitalWrite(AIN1, LOW);
+  digitalWrite(AIN2, HIGH);
+  digitalWrite(BIN1, LOW);
+  digitalWrite(BIN2, HIGH);
 
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnRight(int speed) {
-  // Left motor forward, right motor backward
-  digitalWrite(AIN1, LOW);
-  digitalWrite(AIN2, HIGH);
-  digitalWrite(BIN1, LOW);
-  digitalWrite(BIN2, HIGH);
+  // Right motor backward, left motor forward
+  digitalWrite(AIN1, HIGH);
+  digitalWrite(AIN2, LOW);
+  digitalWrite(BIN1, HIGH);
+  digitalWrite(BIN2, LOW);
 
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
