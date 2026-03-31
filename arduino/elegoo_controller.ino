@@ -42,9 +42,9 @@ Health Check:
 */
 
 #define PWMA 5   // Right motor speed
-#define AIN1 8   // Right motor direction (LOW=fwd, HIGH=bwd)
+#define AIN1 8   // Right motor direction (HIGH=fwd, LOW=bwd)
 #define PWMB 6   // Left motor speed
-#define BIN1 7   // Left motor direction (LOW=fwd, HIGH=bwd)
+#define BIN1 7   // Left motor direction (HIGH=fwd, LOW=bwd)
 
 const int MOTOR_SPEED = 200;  // 0-255
 
@@ -54,29 +54,29 @@ void stopMotors() {
 }
 
 void moveForward(int speed) {
-  digitalWrite(AIN1, LOW);   // Right motor forward
-  digitalWrite(BIN1, LOW);   // Left motor forward
+  digitalWrite(AIN1, HIGH);  // Right motor forward
+  digitalWrite(BIN1, HIGH);  // Left motor forward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void moveBackward(int speed) {
-  digitalWrite(AIN1, HIGH);  // Right motor backward
-  digitalWrite(BIN1, HIGH);  // Left motor backward
+  digitalWrite(AIN1, LOW);   // Right motor backward
+  digitalWrite(BIN1, LOW);   // Left motor backward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnLeft(int speed) {
-  digitalWrite(AIN1, LOW);   // Right motor forward
-  digitalWrite(BIN1, HIGH);  // Left motor backward
+  digitalWrite(AIN1, HIGH);  // Right motor forward
+  digitalWrite(BIN1, LOW);   // Left motor backward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
 
 void turnRight(int speed) {
-  digitalWrite(AIN1, HIGH);  // Right motor backward
-  digitalWrite(BIN1, LOW);   // Left motor forward
+  digitalWrite(AIN1, LOW);   // Right motor backward
+  digitalWrite(BIN1, HIGH);  // Left motor forward
   analogWrite(PWMA, speed);
   analogWrite(PWMB, speed);
 }
