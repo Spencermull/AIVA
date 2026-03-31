@@ -51,17 +51,18 @@ cp ~/AIVA/arduino/elegoo_controller.ino /tmp/elegoo_controller/
 ~/bin/arduino-cli upload  --fqbn arduino:avr:uno --port /dev/ttyUSB0 /tmp/elegoo_controller
 ```
 
-## DRV8835 Motor Driver Pin Mapping (from official Elegoo manual)
+## TB6612FNG Motor Driver Pin Mapping (confirmed by physical testing)
 | Arduino Pin | Function         | Notes                        |
 |-------------|------------------|------------------------------|
+| D3 (STBY)   | Enable           | Must be HIGH to enable motors|
 | D5 (PWMA)   | Motor A speed    | Right side, analogWrite 0-255|
 | D6 (PWMB)   | Motor B speed    | Left side, analogWrite 0-255 |
 | D7 (BIN_1)  | Motor B direction| HIGH=forward, LOW=backward   |
-| D8 (AIN_1)  | Motor A direction| LOW=forward, HIGH=backward   |
+| D8 (AIN_1)  | Motor A direction| HIGH=forward, LOW=backward   |
 
-**Important**: Motor A and B have OPPOSITE direction logic because the motors are physically mounted mirrored on each side of the car. This was confirmed by reading the official Elegoo `DeviceDriverSet_xxx0.cpp` example code.
+**Important**: Both motors use the SAME direction logic (HIGH=forward, LOW=backward). The shield's PCB handles mirrored motor wiring internally. Turns use opposite pin values: turnLeft = AIN1 LOW / BIN1 HIGH, turnRight = AIN1 HIGH / BIN1 LOW.
 
-## Current Status: MOTORS NOT MOVING — debugging in progress
+## Current Status: MOTORS WORKING ✓
 
 ### What has been confirmed working:
 - Flask server starts and receives HTTP requests ✓

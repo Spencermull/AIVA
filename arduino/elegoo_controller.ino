@@ -2,28 +2,29 @@
 ===========================================================
 Project: AIVA Robot Car
 Board: Arduino Uno + Elegoo Smart Car V4.0 Shield
-Motor Driver: DRV8835 (phase/enable mode)
+Motor Driver: TB6612FNG
 
 This Arduino sketch receives single-character commands
 from a Raspberry Pi over USB serial (115200 baud) and
 controls the robot car motors.
 
 -----------------------------------------------------------
-DRV8835 Pin Mapping (Elegoo Smart Car V4.0)
+TB6612FNG Pin Mapping (Elegoo Smart Car V4.0)
 
 Right Motor (Motor A)
   PWMA  → D5   (PWM speed control, analogWrite 0-255)
-  AIN_1 → D8   (direction: LOW=forward, HIGH=backward)
+  AIN_1 → D8   (direction: HIGH=forward, LOW=backward)
 
 Left Motor (Motor B)
   PWMB  → D6   (PWM speed control, analogWrite 0-255)
-  BIN_1 → D7   (direction: LOW=forward, HIGH=backward)
+  BIN_1 → D7   (direction: HIGH=forward, LOW=backward)
 
 Enable
   STBY  → D3   (must be HIGH to enable motors)
 
-NOTE: Both motors use the SAME direction logic (LOW=fwd).
-The shield's PCB handles the mirrored motor wiring internally.
+NOTE: Both motors use the SAME direction logic (HIGH=fwd).
+Turns use OPPOSITE logic: turnLeft has AIN1=LOW/BIN1=HIGH,
+turnRight has AIN1=HIGH/BIN1=LOW.
 
 -----------------------------------------------------------
 Serial Protocol (from Raspberry Pi)
