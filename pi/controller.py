@@ -12,6 +12,7 @@ Responsibilities:
 import sys
 import tty
 import termios
+import select
 
 # Elegoo Smart Car V4.0 serial command map
 COMMANDS = {
@@ -31,12 +32,15 @@ COMMANDS = {
 LABELS = {"F": "Forward", "B": "Backward", "L": "Left", "R": "Right", "S": "Stop"}
 
 
-def _read_key() -> str:
-    """Read a keypress (including escape sequences) without waiting for Enter."""
+def _read_key(timeout=0.15):
+    """Read a keypress with timeout. Returns None if no key pressed."""
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     try:
         tty.setraw(fd)
+        ready, _, _ = select.select([sys.stdin], [], [], timeout)
+        if not ready:
+            return None
         ch = sys.stdin.read(1)
         # Escape sequence: read up to 2 more bytes
         if ch == "\x1b":
@@ -70,7 +74,17 @@ def run_keyboard_controller(bridge) -> None:
     last_cmd = None
 
     while True:
-        key = _read_key().lower()
+        key = _read_key()
+
+        if key is None:
+            # No key pressed — stop the car if it was moving
+            if last_cmd and last_cmd != "S":
+                bridge.send("S")
+                print(f"\r  {LABELS['S']}   ", end="", flush=True)
+                last_cmd = "S"
+            continue
+
+        key = key.lower()
 
         if key in ("q", "\x03"):  # Q or Ctrl+C
             print("\nQuitting — stopping car.")
