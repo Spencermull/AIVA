@@ -3,4 +3,5 @@ numpy
 pyserial
 flask
 ultralytics
+requests
 
