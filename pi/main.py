@@ -4,7 +4,7 @@ from api_server import app, run_server
 from serial_bridge import SerialBridge
 from controller import run_keyboard_controller
 from middleware.hazard_middleware import run_hazard_middleware
-
+# Make sure eveything is plugged in. Do not want repeat of the April Fools day catatrophe
 
 def parse_args():
     parser = argparse.ArgumentParser()
